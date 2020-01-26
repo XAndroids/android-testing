@@ -40,7 +40,8 @@ import org.robolectric.annotation.LooperMode
 import org.robolectric.annotation.TextLayoutMode
 
 /**
- * Integration test for the Task List screen.
+ * 集成测试任务列表页面
+ * 该页面测试主要集中测试TaskFragment中的业务Case
  */
 // TODO - Use FragmentScenario, see: https://github.com/android/android-test/issues/291
 @RunWith(AndroidJUnit4::class)

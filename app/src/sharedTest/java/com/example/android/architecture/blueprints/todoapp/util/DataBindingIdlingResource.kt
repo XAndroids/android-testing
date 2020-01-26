@@ -28,20 +28,19 @@ import androidx.test.espresso.IdlingResource
 import java.util.UUID
 
 /**
- * An espresso idling resource implementation that reports idle status for all data binding
- * layouts. Data Binding uses a mechanism to post messages which Espresso doesn't track yet.
+ * 一个espresso idling resource实现，它报告所有data binding布局的空闲装填。data binding使用一种机制来发送
+ * Espresso没有被跟踪的消息。
  *
- * Since this application only uses fragments, the resource only checks the fragments and their
- * children instead of the whole view tree.
+ * 因为这个应用程序仅仅使用fragments，这个resource仅仅检测fragment和它们的孩子，而不是整个视图树结构。
  */
 class DataBindingIdlingResource : IdlingResource {
-    // list of registered callbacks
+    // 注册callbak列表
     private val idlingCallbacks = mutableListOf<IdlingResource.ResourceCallback>()
-    // give it a unique id to workaround an espresso bug where you cannot register/unregister
-    // an idling resource w/ the same name.
+    //给它一个唯一的id类解决espresso的bug，在这个bug中不能注册/注销同一个名字的idling resource
     private val id = UUID.randomUUID().toString()
-    // holds whether isIdle is called and the result was false. We track this to avoid calling
-    // onTransitionToIdle callbacks if Espresso never thought we were idle in the first place.
+
+    //保存是否调用isIdle，结构是否为false。我们跟踪它来避免调用onTransitionToIdle回调，如果Espresso从未
+    //想过我们是空闲的
     private var wasNotIdle = false
 
     lateinit var activity: FragmentActivity
@@ -49,17 +48,19 @@ class DataBindingIdlingResource : IdlingResource {
     override fun getName() = "DataBinding $id"
 
     override fun isIdleNow(): Boolean {
+        //所有的DataBinding是否需要更新数据
         val idle = !getBindings().any { it.hasPendingBindings() }
+
         @Suppress("LiftReturnOrAssignment")
         if (idle) {
             if (wasNotIdle) {
-                // notify observers to avoid espresso race detector
+                //通知观察者避免espresso race 探测器
                 idlingCallbacks.forEach { it.onTransitionToIdle() }
             }
             wasNotIdle = false
         } else {
+            //如果不是，则16ms后继续监测下一帧，知道DataBinding数据更新完毕
             wasNotIdle = true
-            // check next frame
             activity.findViewById<View>(android.R.id.content).postDelayed({
                 isIdleNow
             }, 16)
@@ -72,19 +73,19 @@ class DataBindingIdlingResource : IdlingResource {
     }
 
     /**
-     * Find all binding classes in all currently available fragments.
+     * 在所有当前有效的Fragment中查找所有binding类
      */
     private fun getBindings(): List<ViewDataBinding> {
         val fragments = (activity as? FragmentActivity)
-            ?.supportFragmentManager
-            ?.fragments
+                ?.supportFragmentManager
+                ?.fragments
 
         val bindings =
-            fragments?.mapNotNull {
-                it.view?.getBinding()
-            } ?: emptyList()
+                fragments?.mapNotNull {
+                    it.view?.getBinding()
+                } ?: emptyList()
         val childrenBindings = fragments?.flatMap { it.childFragmentManager.fragments }
-            ?.mapNotNull { it.view?.getBinding() } ?: emptyList()
+                ?.mapNotNull { it.view?.getBinding() } ?: emptyList()
 
         return bindings + childrenBindings
     }
@@ -93,18 +94,16 @@ class DataBindingIdlingResource : IdlingResource {
 private fun View.getBinding(): ViewDataBinding? = DataBindingUtil.getBinding(this)
 
 /**
- * Sets the activity from an [ActivityScenario] to be used from [DataBindingIdlingResource].
+ * 使用ActivityScenario设置ActivityScenario，用于DataBindingIdlingResource
  */
-fun DataBindingIdlingResource.monitorActivity(
-activityScenario: ActivityScenario<out FragmentActivity>
-) {
+fun DataBindingIdlingResource.monitorActivity(activityScenario: ActivityScenario<out FragmentActivity>) {
     activityScenario.onActivity {
         this.activity = it
     }
 }
 
 /**
- * Sets the fragment from a [FragmentScenario] to be used from [DataBindingIdlingResource].
+ * 使用FragmentScenarios设置fragment，用于DataBindingIdlingResource
  */
 fun DataBindingIdlingResource.monitorFragment(fragmentScenario: FragmentScenario<out Fragment>) {
     fragmentScenario.onFragment {

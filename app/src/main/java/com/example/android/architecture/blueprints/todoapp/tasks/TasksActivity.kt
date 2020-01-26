@@ -27,6 +27,9 @@ import androidx.navigation.ui.setupWithNavController
 import com.example.android.architecture.blueprints.todoapp.R
 import com.google.android.material.navigation.NavigationView
 
+/**
+ * 任务模块Activity，负责完成抽屉导航和NavController组件的实现
+ */
 class TasksActivity : AppCompatActivity() {
 
     private lateinit var drawerLayout: DrawerLayout
@@ -35,9 +38,15 @@ class TasksActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.tasks_act)
+
+        //设置抽屉导航
         setupNavigationDrawer()
+
+        //设置ActionBar导航
         setSupportActionBar(findViewById(R.id.toolbar))
 
+        //设置NavController组件实现
+        //TODO：具体API后续研究
         val navController : NavController = findNavController(R.id.nav_host_fragment)
         appBarConfiguration =
             AppBarConfiguration.Builder(R.id.tasksFragment, R.id.statisticsFragment)
@@ -55,6 +64,7 @@ class TasksActivity : AppCompatActivity() {
     private fun setupNavigationDrawer() {
         drawerLayout = (findViewById<DrawerLayout>(R.id.drawer_layout))
             .apply {
+                //设置抽屉导航的背景颜色
                 setStatusBarBackground(R.color.colorPrimaryDark)
             }
     }

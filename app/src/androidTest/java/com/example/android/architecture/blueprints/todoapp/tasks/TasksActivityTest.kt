@@ -51,7 +51,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * Large End-to-End test for the tasks module.
+ * Task模块的大型End-to-End测试
+ * 该类主要测试TasksActivity中TasksFragment、AddEditTaskFragment、StatisticsFragment集成的Case
  */
 @RunWith(AndroidJUnit4::class)
 @LargeTest
@@ -59,23 +60,25 @@ class TasksActivityTest {
 
     private lateinit var repository: TasksRepository
 
-    // An Idling Resource that waits for Data Binding to have no pending bindings
+    //一个Idling Resource等待Data Binding有挂起的bingding
     private val dataBindingIdlingResource = DataBindingIdlingResource()
 
     @Before
     fun init() {
+        //获取TaskRepository，清除Tasks
         repository = ServiceLocator.provideTasksRepository(getApplicationContext())
         repository.deleteAllTasksBlocking()
     }
 
     @After
     fun reset() {
+        //重置TaskRepository
         ServiceLocator.resetRepository()
     }
 
     /**
-     * Idling resources tell Espresso that the app is idle or busy. This is needed when operations
-     * are not scheduled in the main Looper (for example when executed on a different thread).
+     * Idling resources通知Espresso App是空闲或者忙碌。当Main Looper没有调度操作时（例如在不同的线程上执行时）
+     * 就需要这样的操作
      */
     @Before
     fun registerIdlingResource() {
@@ -84,7 +87,7 @@ class TasksActivityTest {
     }
 
     /**
-     * Unregister your Idling Resource so it can be garbage collected and does not leak any memory.
+     * 注销你的Idling Resource，这样它就能被垃圾回收，并且不会导致任何内存泄露
      */
     @After
     fun unregisterIdlingResource() {
@@ -108,47 +111,47 @@ class TasksActivityTest {
     fun editTask() {
         repository.saveTaskBlocking(Task("TITLE1", "DESCRIPTION"))
 
-        // start up Tasks screen
+        //启动Tasks页面
         val activityScenario = ActivityScenario.launch(TasksActivity::class.java)
+        //所有DataBinding数据绑定完毕后，才执行后面的指令
         dataBindingIdlingResource.monitorActivity(activityScenario)
 
-        // Click on the task on the list and verify that all the data is correct
+        //点击在列表中的任务，然后验证所有数据正确
         onView(withText("TITLE1")).perform(click())
         onView(withId(R.id.task_detail_title)).check(matches(withText("TITLE1")))
         onView(withId(R.id.task_detail_description)).check(matches(withText("DESCRIPTION")))
         onView(withId(R.id.task_detail_complete)).check(matches(not(isChecked())))
 
-        // Click on the edit button, edit, and save
+        //点击编辑按钮，编辑，然后保存
         onView(withId(R.id.fab_edit_task)).perform(click())
         onView(withId(R.id.add_task_title)).perform(replaceText("NEW TITLE"))
         onView(withId(R.id.add_task_description)).perform(replaceText("NEW DESCRIPTION"))
         onView(withId(R.id.fab_save_task)).perform(click())
 
-        // Verify task is displayed on screen in the task list.
+        //验证任务在屏幕中的任务列表展示
         onView(withText("NEW TITLE")).check(matches(isDisplayed()))
-        // Verify previous task is not displayed
+        //验证前面任务不展示
         onView(withText("TITLE1")).check(doesNotExist())
     }
 
     @Test
     fun createOneTask_deleteTask() {
-
-        // start up Tasks screen
+        //启动Tasks页面
         val activityScenario = ActivityScenario.launch(TasksActivity::class.java)
         dataBindingIdlingResource.monitorActivity(activityScenario)
 
-        // Add active task
+        //添加活动的任务
         onView(withId(R.id.fab_add_task)).perform(click())
         onView(withId(R.id.add_task_title)).perform(typeText("TITLE1"), closeSoftKeyboard())
         onView(withId(R.id.add_task_description)).perform(typeText("DESCRIPTION"))
         onView(withId(R.id.fab_save_task)).perform(click())
 
-        // Open it in details view
+        //打开它的详情页面
         onView(withText("TITLE1")).perform(click())
-        // Click delete task in menu
+        //点击菜单中的删除任务
         onView(withId(R.id.menu_delete)).perform(click())
 
-        // Verify it was deleted
+        //验证他已经被删除
         onView(withId(R.id.menu_filter)).perform(click())
         onView(withText(string.nav_all)).perform(click())
         onView(withText("TITLE1")).check(doesNotExist())
@@ -159,16 +162,16 @@ class TasksActivityTest {
         repository.saveTaskBlocking(Task("TITLE1", "DESCRIPTION"))
         repository.saveTaskBlocking(Task("TITLE2", "DESCRIPTION"))
 
-        // start up Tasks screen
+        //启动Tasks页面
         val activityScenario = ActivityScenario.launch(TasksActivity::class.java)
         dataBindingIdlingResource.monitorActivity(activityScenario)
 
-        // Open the second task in details view
+        //打开第二个任务的详情页面
         onView(withText("TITLE2")).perform(click())
-        // Click delete task in menu
+        //点击菜单删除任务
         onView(withId(R.id.menu_delete)).perform(click())
 
-        // Verify only one task was deleted
+        //验证仅仅一个任务被删除
         onView(withId(R.id.menu_filter)).perform(click())
         onView(withText(string.nav_all)).perform(click())
         onView(withText("TITLE1")).check(matches(isDisplayed()))
@@ -196,7 +199,7 @@ class TasksActivityTest {
 
         // Check that the task is marked as completed
         onView(allOf(withId(R.id.complete), hasSibling(withText(taskTitle))))
-            .check(matches(isChecked()))
+                .check(matches(isChecked()))
     }
 
     @Test
@@ -219,7 +222,7 @@ class TasksActivityTest {
 
         // Check that the task is marked as active
         onView(allOf(withId(R.id.complete), hasSibling(withText(taskTitle))))
-            .check(matches(not(isChecked())))
+                .check(matches(not(isChecked())))
     }
 
     @Test
@@ -244,7 +247,7 @@ class TasksActivityTest {
 
         // Check that the task is marked as active
         onView(allOf(withId(R.id.complete), hasSibling(withText(taskTitle))))
-            .check(matches(not(isChecked())))
+                .check(matches(not(isChecked())))
     }
 
     @Test
@@ -269,7 +272,7 @@ class TasksActivityTest {
 
         // Check that the task is marked as active
         onView(allOf(withId(R.id.complete), hasSibling(withText(taskTitle))))
-            .check(matches(isChecked()))
+                .check(matches(isChecked()))
     }
 
     @Test

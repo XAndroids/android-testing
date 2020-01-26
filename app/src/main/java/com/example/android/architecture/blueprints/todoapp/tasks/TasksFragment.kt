@@ -29,7 +29,6 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.android.architecture.blueprints.todoapp.EventObserver
 import com.example.android.architecture.blueprints.todoapp.R
-import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.databinding.TasksFragBinding
 import com.example.android.architecture.blueprints.todoapp.util.obtainViewModel
 import com.example.android.architecture.blueprints.todoapp.util.setupSnackbar
@@ -39,7 +38,7 @@ import timber.log.Timber
 import java.util.ArrayList
 
 /**
- * Display a grid of [Task]s. User can choose to view all, active or completed tasks.
+ * 显示一个任务列表。用户可以选择所有任务，active和完成任务
  */
 class TasksFragment : Fragment() {
 
